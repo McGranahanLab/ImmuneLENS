@@ -1,0 +1,159 @@
+#' TCRA fasta file
+#'
+#' Sequence around the TCRA locus from fasta file
+#' chr14:22000000-23110000 (hg19)
+#' chr14:???(hg38)
+#'
+#' @format A list containing a SeqFastadna object
+#' @return NA
+"TCRA_fasta"
+
+
+#' TCRA segments file (hg19)
+#'
+#' Segments used for running T cell ExTRECT, defining TCRA loci,
+#' local regions used for normalisation and region of maximum VDJ
+#' recombination (hg19 version)
+#'
+#' @format A list containing regions used to run T cell ExTRECT
+#' @return NA
+"tcra_seg_hg19"
+
+#' TCRA segments file (hg38)
+#'
+#' Segments used for running T cell ExTRECT, defining TCRA loci,
+#' local regions used for normalisation and region of maximum VDJ
+#' recombination (hg38 version)
+#'
+#' @format A list containing regions used to run T cell ExTRECT
+#' @return NA
+"tcra_seg_hg38"
+
+
+#' TCRA exons (hg19)
+#'
+#' Exons used in Agilent v4/5 capture kit within TCRA loci, extracted
+#' from bed file (hg19 version)
+#'
+#' @format A data frame of exon locations
+#' @return NA
+"TCRA_exons_hg19"
+
+
+#' TCRA exons (hg38)
+#'
+#' Exons used in Agilent v4/5 capture kit within TCRA loci, extracted
+#' from bed file (hg38 version)
+#'
+#' @format A data frame of exon locations
+#' @return NA
+"TCRA_exons_hg38"
+
+
+#' TCRA exons (hg19)
+#'
+#' Exons for Agilent v2 capture kit within TCRA loci, based
+#' on Agilent v4/5 but with exons showing bias removed (hg19)
+#'
+#' @format A data frame of exon locations
+#' @return NA
+"TCRA_exons_agilent_v2_hg19"
+
+
+#' TCRA exons (hg38)
+#'
+#' Exons for Agilent v2 capture kit within TCRA loci, based
+#' on Agilent v4/5 but with exons showing bias removed (hg38)
+#'
+#' @format A data frame of exon locations
+#' @return NA
+"TCRA_exons_agilent_v2_hg38"
+
+#' TCRA segments
+#'
+#' Data frame of the VDJ gene segments within the TCRA locu
+#'
+#' @format A data frame of TCRA segments
+#' @return NA
+"TCRA_segments"
+
+#' TCRA exons from Nimblegen SeqCap_EZ_Exome_v3_hg19_capture_targets.bed (hg19)
+#'
+#' Exons used in Nimblegen SeqCap EZ Exome v3 capture kit within TCRA loci, extracted
+#' from bed file (hg19 version)
+#'
+#' @format A data frame of exon locations
+#' @return NA
+"TCRA_exons_nimblegen_hg19"
+
+#' TCRA exons from Nimblegen SeqCap_EZ_Exome_v3_hg19_capture_targets.bed (hg19)
+#'
+#' Exons used in Nimblegen SeqCap EZ Exome v3 capture kit within TCRA loci, extracted
+#' from bed file (hg19 version)
+#'
+#' @format A data frame of exon locations
+#' @return NA
+"TCRA_exons_nimblegen_hg38"
+
+#' Example coverage file
+#'
+#' Coverage values of the TCRA gene from the TRACERx100 CRUK0023 R1 sample (hg19 format)
+#'
+#' @format A data frame of coverage values within TCRA gene
+#' @return NA
+"cov_example"
+
+#' FASTA sequences for VDJ genes (hg19)
+#'
+#' FAST Sequences
+#'
+#' @format a list containing SegFastadna objects
+#' @return NA
+"all_fasta"
+
+#' FASTA sequences for VDJ genes (hg38)
+#'
+#' FAST Sequences
+#'
+#' @format a list containing SegFastadna objects
+#' @return NA
+"all_fasta_hg38"
+
+#' TCRA segments file with V/J segment loci (hg19)
+#'
+#' Segments used for running T cell ExTRECT, defining TCRA loci,
+#' local regions used for normalisation and region of maximum VDJ
+#' recombination and V/J segments (hg19 version)
+#'
+#' @format A list containing regions used to run T cell ExTRECT 2.0
+#' @return NA
+"tcra_seg_hg19_vdj"
+
+#' TCRA segments file with V/J segment loci (hg38)
+#'
+#' Segments used for running T cell ExTRECT, defining TCRA loci,
+#' local regions used for normalisation and region of maximum VDJ
+#' recombination and V/J segments (hg19 version)
+#'
+#' @format A list containing regions used to run T cell ExTRECT 2.0
+#' @return NA
+"tcra_seg_hg38_vdj"
+
+#' VDJ segments file (hg19 and hg38)
+#'
+#' Segments used for running T cell ExTRECT, defining all VDJ genes loci,
+#' local regions used for normalisation and region of maximum VDJ
+#' recombination
+#'
+#' @format A list containing regions used to run T cell ExTRECT
+#' @return NA
+"vdj_seg_list"
+
+#' TCRB/TCRG/IGH/IGL/IGJ segments file with V/J segment loci
+#'
+#' Segments used for running T cell ExTRECT, defining V/D/J segment
+#' locations for both hg19 and hg38
+#'
+#' @format A list containing regions used to run T cell ExTRECT 2.0
+#' @return NA
+"vdj.segments.list"
