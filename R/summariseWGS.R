@@ -23,8 +23,14 @@ summariseWGS <- function(segmodel.out, vdj.gene = 'TCRA', customNorm = NULL){
   focal_segment <- segmodel.out$segment[grepl(vseg, segmodel.out$segment) &
                                           grepl(jseg, segmodel.out$segment)]
   if(length(focal_segment) == 0){
-    warning('No focal segment found - assumed low quality sample')
-    return(NULL)
+    warning('No focal segment found - assumed low quality sample - use last vseg if possible')
+    focal_segment <- segmodel.out$segment[grepl(vseg, segmodel.out$segment)]
+    if(length(focal_segment) == 0){
+      return(NULL)
+    }else{
+      focal_segment <- rev(focal_segment)[1]
+      warning(paste0('focal segment set to ', focal_segment))
+    }
   }
   focal_segment_split <- strsplit(focal_segment,'_')[[1]]
 
@@ -118,6 +124,10 @@ summariseWGS <- function(segmodel.out, vdj.gene = 'TCRA', customNorm = NULL){
       dplyr::group_by(sample) %>%
       dplyr::summarise(shannon.trav = sum(shannon.value)) %>%
       dplyr::select(shannon.trav) %>% `[[`(1)
+    if(length(shannon.traj) == 0){
+      shannon.traj <- NA}
+    if(length(shannon.trav) == 0){
+      shannon.trav <- NA}
   }else{
     shannon.trav <- NA
     shannon.traj <- NA

@@ -43,8 +43,10 @@ getCovFromBam_WGS <- function(bamPath, outPath, vdj.gene, hg19_or_38,
   }else{
     bai.path <- paste0(bamPath,'.bai')
     bai.path2 <- paste0(gsub('.bam','',bamPath),'.bai')
-    if(!(file.exists(bai.path) | file.exists(bai.path2))){
-      stop('No index bai file found for bam, please index first before preceding')
+    crai.path <- paste0(bamPath,'.crai')
+    crai.path2 <- paste0(gsub('.cram','',bamPath),'.crai')
+    if(!(file.exists(bai.path) | file.exists(bai.path2) | file.exists(crai.path) | file.exists(crai.path2))){
+      stop('No index bai or crai file found for bam or cram, please index first before preceding')
     }
   }
 
