@@ -15,6 +15,10 @@
 #' @param GC_mode Run GC correct 'simultaneous' or 'prior' to fitting linear model
 #' @param classSwitch_input Whether to include class switching in model for IGH (default = TRUE)
 #' @param customNorm Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)
+#' @param IGH_gc_constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)
+#' @param IGH_gc_constraint_value Value to constrain IGH solution (default 0.01) 
+#' @param TCRB_gc_constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the TCRB solution (default TRUE to prevent over-fitting)
+#' @param allGC TRUE/FALSE, when TRUE make model where everything is due to GC
 #' @return data frame of TCRA T cell fractions with 95\% CI
 #' @name runImmuneLENS
 #' @export
@@ -31,7 +35,11 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                             removed_flag = TRUE,
                                             GC_mode = 'simultaneous',
                                             classSwitch_input = TRUE,
-                                            customNorm = NULL){
+                                            customNorm = NULL,
+                                            IGH_gc_constraint = TRUE,
+                                            TCRB_gc_constraint = TRUE,
+                                            IGH_gc_constraint_value = 0.01,
+                                            allGC = FALSE){
 
   X2 <- exon2 <- pos <- NULL
   vdj.chr.df <- data.frame(gene = c('TCRA','TCRB','TCRG','IGH','IGL','IGK', 'TCRD'),
@@ -131,7 +139,11 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                                            gene.fasta = VDJ_fasta,
                                                            gene.fasta.start = exon.adjust.loc,
                                                            classSwitch = classSwitch_input,
-                                                           customNorm = customNorm)
+                                                           customNorm = customNorm,
+                                                           IGH.gc.constraint = IGH_gc_constraint,
+                                                           TCRB.gc.constraint = TCRB_gc_constraint,
+                                                           IGH.gc.constraint.value =  IGH_gc_constraint_value,
+                                                           allGC = allGC)
     }
     if(GC_mode == 'prior'){
       vdj.logR.df <- GCcorrect_WGS(vdj.logR.df,

@@ -17,7 +17,11 @@ getVDJfraction_ImmuneLENS(
   gene.fasta.start = NULL,
   sliding = 1000,
   classSwitch = TRUE,
-  customNorm = NULL
+  customNorm = NULL,
+  IGH.gc.constraint = TRUE,
+  IGH.gc.constraint.value = 0.01,
+  TCRB.gc.constraint = TRUE,
+  allGC = FALSE
 )
 }
 \arguments{
@@ -46,6 +50,14 @@ getVDJfraction_ImmuneLENS(
 \item{classSwitch}{Whether to include class switching in model for IGH (default = TRUE)}
 
 \item{customNorm}{Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)}
+
+\item{IGH.gc.constraint}{TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)}
+
+\item{IGH.gc.constraint.value}{Value to constrain smooth.gc and smooth.gc2 by (default 0.01)}
+
+\item{TCRB.gc.constraint}{TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the TCRB solution (default TRUE to prevent over-fitting)}
+
+\item{allGC}{TRUE/FALSE, when TRUE make model where everything is due to GC}
 }
 \value{
 data frame of TCRA T cell fractions for VDJ segments

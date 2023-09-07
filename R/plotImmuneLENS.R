@@ -20,6 +20,10 @@
 #' @param output_df If true return data frame used for plotting instead of plot
 #' @param classSwitch Whether to include class switching in model for IGH (default = TRUE)
 #' @param customNorm Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)
+#' @param IGH_gc_constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)
+#' @param TCRB_gc_constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the TCRB solution (default TRUE to prevent over-fitting)
+#' @param IGH_gc_constraint_value Value to constrain IGH solution (default 0.01)
+#' @param allGC TRUE/FALSE, when TRUE make model where everything is due to GC 
 #' @return data frame of TCRA T cell fractions with 95% CI
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth geom_segment geom_vline annotate theme_bw theme xlab ylab ylim scale_colour_manual ggtitle element_text
 #' @importFrom tidyr pivot_longer
@@ -42,7 +46,11 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                  removed_flag = TRUE,
                                  output_df = FALSE,
                                  classSwitch = TRUE,
-                                 customNorm = NULL){
+                                 customNorm = NULL,
+                                 IGH_gc_constraint = TRUE,
+                                 TCRB_gc_constraint = TRUE,
+                                 IGH_gc_constraint_value = 0.01,
+                                 allGC = FALSE){
 
   # Checks on input data
   if(!vdj.gene %in% c('TCRA','TCRB','TCRG','IGH')){
@@ -101,7 +109,20 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                     'IGHD5_18', 'IGHD4_17','IGHD3_16', 'IGHD2_15', 'IGHD1_14',
                     'IGHD6_13', 'IGHD5_12','IGHD4_11', 'IGHD3_10', 'IGHD3_9',
                     'IGHD2_8', 'IGHD1_7','IGHD6_6' , 'IGHD5_5', 'IGHD4_4',
-                    'IGHD3_3', 'IGHD2_2', 'IGHD1_1','IGHD7_27','IGLC7','IGLL5',
+                    'IGHD3_3', 'IGHD2_2', 'IGHD1_1','IGHD7_27',
+                    # IGHV psedogenes:
+                    'IGHVII_1_1', 'IGHVIII_2_1', 'IGHVIII_5_1', 'IGHVIII_5_2', 
+                    'IGHVIII_11_1', 'IGHVIII_13_1', 'IGHVII_15_1', 'IGHVIII_16_1',
+                    'IGHVII_22_1', 'IGHVIII_22_2', 'IGHVIII_25_1', 'IGHVIII_26_1',
+                    'IGHVII_26_2', 'IGHVII_28_1', 'IGHVII_30_1', 'IGHVII_30_21',
+                    'IGHVII_33_1', 'IGHVIII_38_1', 'IGHVII_40_1', 'IGHVII_43_1',
+                    'IGHVIII_44', 'IGHVIV_44_1', 'IGHVII_44_2', 'IGHVII_46_1',
+                    'IGHVIII_47_1', 'IGHVII_49_1', 'IGHVII_51_2', 'IGHVII_53_1',
+                    'IGHVII_60_1', 'IGHVII_62_1', 'IGHVII_65_1', 'IGHVII_67_1', 
+                    'IGHVIII_67_2', 'IGHVIII_67_3', 'IGHVIII_67_4', 'IGHVII_74_1',
+                    'IGHVIII_76_1', 'IGHVII_78_1', 'IGHVIII_82', 'IGHVII_20_1',
+                    'IGHVII_31_1', 'IGHVIII_51_1',
+                    'IGLC7','IGLL5',
                     'IGLC1','IGLC2','IGLC3','IGLC4','IGLC5','IGLC6','IGKC')
 
   if(!classSwitch){
@@ -266,7 +287,11 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                                       gene.fasta = VDJ_fasta,
                                                       gene.fasta.start = exon.adjust.loc,
                                                       classSwitch = classSwitch,
-                                                      customNorm = customNorm)
+                                                      customNorm = customNorm,
+                                                      IGH.gc.constraint = IGH_gc_constraint,
+                                                      TCRB.gc.constraint = TCRB_gc_constraint,
+                                                      IGH.gc.constraint.value = IGH_gc_constraint_value,
+                                                      allGC = allGC)
 
   }
 
@@ -386,8 +411,16 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
 
   # For class switching:
   if(vdj.gene == 'IGH' & classSwitch){
-    IGH.M <- data.frame(segName = 'IGHM',logR = 0,
-                        start = 105856219, end = 105863258)
+    
+    if(hg19_or_38 == 'hg38'){
+      IGH.M <- data.frame(segName = 'IGHM',logR = 0,
+                          start = 105860500, end = 105863258)
+    }
+
+    if(hg19_or_38 == 'hg19'){
+      IGH.M <- data.frame(segName = 'IGHM',logR = 0,
+                          start = 106326710, end = 106329468)
+    }
     tcra.seg.sol.df <- rbind(tcra.seg.sol.df,
                              IGH.M) %>%
       dplyr::arrange(start)
@@ -468,8 +501,8 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
       })
 
       vdj.example.df <- vdj.example.df %>%
-        mutate(exon2 = floor((pos - (vdj.start - 1))/100) +1 ) %>%
-        left_join(customNorm, 'exon2')
+        dplyr::mutate(exon2 = floor((pos - (vdj.start - 1))/100) +1 ) %>%
+        dplyr::left_join(customNorm, 'exon2')
 
       for(i in seq_len(length(norm.names))){
         sym_name <- rlang::sym(norm.names[i])

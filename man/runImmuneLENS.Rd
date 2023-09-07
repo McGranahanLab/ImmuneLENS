@@ -19,7 +19,11 @@ runImmuneLENS(
   removed_flag = TRUE,
   GC_mode = "simultaneous",
   classSwitch_input = TRUE,
-  customNorm = NULL
+  customNorm = NULL,
+  IGH_gc_constraint = TRUE,
+  TCRB_gc_constraint = TRUE,
+  IGH_gc_constraint_value = 0.01,
+  allGC = FALSE
 )
 }
 \arguments{
@@ -52,6 +56,14 @@ runImmuneLENS(
 \item{classSwitch_input}{Whether to include class switching in model for IGH (default = TRUE)}
 
 \item{customNorm}{Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)}
+
+\item{IGH_gc_constraint}{TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)}
+
+\item{TCRB_gc_constraint}{TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the TCRB solution (default TRUE to prevent over-fitting)}
+
+\item{IGH_gc_constraint_value}{Value to constrain IGH solution (default 0.01)}
+
+\item{allGC}{TRUE/FALSE, when TRUE make model where everything is due to GC}
 }
 \value{
 data frame of TCRA T cell fractions with 95\% CI

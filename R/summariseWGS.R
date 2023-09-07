@@ -150,6 +150,10 @@ summariseWGS <- function(segmodel.out, vdj.gene = 'TCRA', customNorm = NULL){
       dplyr::filter(segment %in% c('IGHE')) %>%
       dplyr::select(segment.fraction) %>% `[[`(1) %>% sum()
     igMD.frac <- output.summary$IGH.bcell.fraction - (igA.frac + igG.frac + igE.frac)
+    if(igMD.frac < 0 & igMD.frac > -1e-10){
+      # Fix floating point error
+      igMD.frac <- 0
+    }
     output.summary[['class.switch.frac']] <- cs.fraction
     output.summary[['igA.frac']] <- igA.frac
     output.summary[['igG.frac']] <- igG.frac

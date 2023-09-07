@@ -13,6 +13,10 @@
 #' @param sliding number of bp for gc windows (default = 1000)
 #' @param classSwitch Whether to include class switching in model for IGH (default = TRUE)
 #' @param customNorm Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)
+#' @param IGH.gc.constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)
+#' @param IGH.gc.constraint.value Value to constrain smooth.gc and smooth.gc2 by (default 0.01) 
+#' @param TCRB.gc.constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the TCRB solution (default TRUE to prevent over-fitting)
+#' @param allGC TRUE/FALSE, when TRUE make model where everything is due to GC
 #' @return data frame of TCRA T cell fractions for VDJ segments
 #' @name getVDJfraction_ImmuneLENS
 #'
@@ -25,7 +29,11 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
                                         gene.fasta.start = NULL,
                                         sliding = 1000,
                                         classSwitch = TRUE,
-                                        customNorm = NULL){
+                                        customNorm = NULL,
+                                        IGH.gc.constraint = TRUE,
+                                        IGH.gc.constraint.value = 0.01,
+                                        TCRB.gc.constraint = TRUE,
+                                        allGC = FALSE){
 
 
   # Solve latest binding issues
@@ -63,8 +71,8 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
       start_pos_1 <- vdj_seg_list[[paste0(vdj.gene,'_',hg19_or_38)]]$start[1] - 1
 
       test.logR <- test.logR %>%
-        mutate(exon2 = floor((pos - start_pos_1)/100) +1 ) %>%
-        left_join(customNorm,'exon2')
+        dplyr::mutate(exon2 = floor((pos - start_pos_1)/100) +1 ) %>%
+        dplyr::left_join(customNorm,'exon2')
 
       norm_col_names <- setdiff(colnames(customNorm),'exon2')
 
@@ -101,7 +109,20 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
                     'IGHD5_18', 'IGHD4_17','IGHD3_16', 'IGHD2_15', 'IGHD1_14',
                     'IGHD6_13', 'IGHD5_12','IGHD4_11', 'IGHD3_10', 'IGHD3_9',
                     'IGHD2_8', 'IGHD1_7','IGHD6_6' , 'IGHD5_5', 'IGHD4_4',
-                    'IGHD3_3', 'IGHD2_2', 'IGHD1_1','IGHD7_27','IGLC7','IGLL5',
+                    'IGHD3_3', 'IGHD2_2', 'IGHD1_1','IGHD7_27',
+                    # IGHV psedogenes:
+                    'IGHVII_1_1', 'IGHVIII_2_1', 'IGHVIII_5_1', 'IGHVIII_5_2', 
+                    'IGHVIII_11_1', 'IGHVIII_13_1', 'IGHVII_15_1', 'IGHVIII_16_1',
+                    'IGHVII_22_1', 'IGHVIII_22_2', 'IGHVIII_25_1', 'IGHVIII_26_1',
+                    'IGHVII_26_2', 'IGHVII_28_1', 'IGHVII_30_1', 'IGHVII_30_21',
+                    'IGHVII_33_1', 'IGHVIII_38_1', 'IGHVII_40_1', 'IGHVII_43_1',
+                    'IGHVIII_44', 'IGHVIV_44_1', 'IGHVII_44_2', 'IGHVII_46_1',
+                    'IGHVIII_47_1', 'IGHVII_49_1', 'IGHVII_51_2', 'IGHVII_53_1',
+                    'IGHVII_60_1', 'IGHVII_62_1', 'IGHVII_65_1', 'IGHVII_67_1', 
+                    'IGHVIII_67_2', 'IGHVIII_67_3', 'IGHVIII_67_4', 'IGHVII_74_1',
+                    'IGHVIII_76_1', 'IGHVII_78_1', 'IGHVIII_82', 'IGHVII_20_1',
+                    'IGHVII_31_1', 'IGHVIII_51_1',
+                    'IGLC7','IGLL5',
                     'IGLC1','IGLC2','IGLC3','IGLC4','IGLC5','IGLC6','IGKC')
 
 
@@ -326,7 +347,28 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
     }
   }
 
-
+  # For IGH check if the VJ segment has been removed and re-create:
+  if(vdj.gene == 'IGH'){
+    if(segment.positions.lengths[which(segment.ranges$segName == new_seg_name)] == 0){
+      remaining_segs <- segment.ranges.upd$segName
+      segment.ranges.upd <- segment.ranges.upd %>%
+        dplyr::mutate(segType = ifelse(grepl('V',segName),'V','J')) %>%
+        dplyr::mutate(next_segType = ifelse(grepl('V',dplyr::lead(segName)),'V','J')) %>%
+        dplyr::mutate(prev_segType = ifelse(grepl('V',dplyr::lag(segName)),'V','J')) 
+      
+      v_seg_loc <- which(segment.ranges.upd$next_segType == 'V')
+      new_seg_name <- paste0(segment.ranges.upd$segName[v_seg_loc[1]],'_',
+                             segment.ranges.upd$segName[v_seg_loc[1] + 1])
+      
+      segment.ranges.upd$segName[v_seg_loc[1]] <- new_seg_name
+      segment.ranges.upd  <- segment.ranges.upd [-c(v_seg_loc[1] + 1), ]
+      segment.ranges.upd  <- segment.ranges.upd  %>%
+        dplyr::select(segName, start, end) %>%
+        dplyr::mutate(segName = as.character(segName))
+    }
+  } 
+  
+  
 
   # Add columns to the matrix
   for(i in seq_len(dim(segment.ranges.upd)[1])){
@@ -399,23 +441,56 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
       warning('Not enough bases with coverage in IGH class switch region')
       return(NULL)
     }
+  
 
     myConstraints1[class.switch.constraint.loc] <- gsub('>','<',myConstraints1[class.switch.constraint.loc])
 
     final_cs_seg <- segment.ranges.upd$segName[max(which(segment.ranges.upd$segName %in% setdiff(class.switch.genes, 'IGHM')))]
     first_v_seg <- segment.ranges.upd$segName[min(grep('J',segment.ranges.upd$segName))]
     JV_seg <- segment.ranges.upd$segName[min(grep('V',segment.ranges.upd$segName))]
-
+    next_seg_name  <- JV_seg
     myConstraints1[IGHM.constraint.loc[1]] <- paste0(final_cs_seg, ' > ', JV_seg, '\n')
     myConstraints1[IGHM.constraint.loc[2]] <-  paste0(first_v_seg, ' < 0\n')
   }
 
+  
+  
   myConstraints1 <- myConstraints1 %>% paste0(collapse = ' ')
 
   myConstraints <- paste0('\n ',myConstraints1, ' ',
                           segment.ranges.upd$segName[length(segment.ranges.upd$segName)],
                           ' < 0')
 
+  if(vdj.gene == 'IGH' & GC.correct & IGH.gc.constraint){
+    # Add in constraints for smooth.gc and smooth.gc2 to prevent over-fitting of IGH solution
+    # Try preventing all the fraction from occuring at the very end:
+    # IGHV3_73 + IGHV3_74 + IGHV3_75 + IGHV3_76 + IGHV5_78 + IGHV3_79 + IGHV4_80 + IGHV7_81
+    if('IGHV3_73' %in% segment.ranges.upd$segName){
+      gc.constraints <- paste0('\n IGHV3_73  > ',IGH.gc.constraint.value,'*',JV_seg)
+    }else{
+      end_v_seg <- utils::tail(segment.ranges.upd$segName,n = 7)[1]
+      gc.constraints <- paste0('\n ',end_v_seg,'  > ',IGH.gc.constraint.value,'*',JV_seg)
+    }
+    
+
+    myConstraints <- paste0(myConstraints, gc.constraints)
+  }
+  
+  if(vdj.gene == 'TCRB' & GC.correct & TCRB.gc.constraint){
+    # 1) smooth.gc + smooth.gc2 > 0, 2) exon.gc2 + smooth.gc2 > 2
+    # 3) abs(ALL) > 3 and < 10
+    gc.constraints <- c('\n smooth.gc + smooth.gc2 > 0 \n exon.gc2 + smooth.gc2 > 2 \n exon.gc2 + smooth.gc - exon.gc - smooth.gc2 < 10')
+    myConstraints <- paste0(myConstraints, gc.constraints)
+  }
+  
+  
+  if((allGC)){
+    next_seg_name <- gsub('-','_',next_seg_name)
+    new.constraint <- paste0('\n ',next_seg_name, ' > -0.00001')
+    myConstraints <- paste0(myConstraints, new.constraint)
+  }
+  
+  
   restr.lm <- restriktor::conLM.lm(test.lm.unconstrained,
                                    constraints = myConstraints,
                                    se = 'none',mix.weights = 'none',
