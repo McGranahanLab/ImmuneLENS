@@ -565,7 +565,6 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
     if(output_df){
       return(list(vdj.example.df,tcra.seg.sol.df))
     }else{
-      print(p1)
       return(p1)
     }
 
