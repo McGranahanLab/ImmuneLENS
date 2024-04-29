@@ -6,7 +6,6 @@
 #' @name getCovFromBam
 #' @export
 
-
 getCovFromBam <- function(bamPath, outPath, vdj.seg){
   # Requires samtools to be installed and working!
   if(length(bamPath) != 1){

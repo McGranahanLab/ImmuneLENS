@@ -6,6 +6,8 @@
 #' @name IGH_haplotype_norm_for_region_diploid 
 
 IGH_haplotype_norm_for_region_diploid <- function(input_cov, region_df){
+
+  start_kb <- end_kb <- reads_seg <- pos <- value <- reads <- update_reads <- NULL
   
   if(dim(region_df)[1] == 0){
     warning('No regions to normalise')

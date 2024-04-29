@@ -1,4 +1,4 @@
-#' Calculate normalised coverage file for the predicted IGH germline haplotype
+#' Calculate normalised coverage file for the predicted IGH germline haplotype for a tumour sample
 #'
 #' @param cov.df data frame of positions and coverage values for IGH loci of matched germline sample
 #' @param cov.df.tumour data frame of positions and coverage values for IGH loci of tumour sample
@@ -11,16 +11,14 @@
 #' @name IGH_haplotype_norm_fun_tumour
 #' @export
 
-IGH_haplotype_norm_fun_tumour <- function(cov.df, cov.df.tumour, regions_gl_df1, ,
+IGH_haplotype_norm_fun_tumour <- function(cov.df, cov.df.tumour, regions_gl_df1,
                                           gc_correct = TRUE,
                                           run_breakpoint_check = TRUE, threshold_to_norm = 0,
                                           norm_type_to_use = 'benchmark') {
   
-  rpart_cp = 0.005
-  
   somatic_regions_df <- somatic_cna_IGH_caller(cov.df, cov.df.tumour,
                                                gc_correct = gc_correct, 
-                                               rpart_cp = rpart_cp, 
+                                               rpart_cp = 0.005, 
                                                run_breakpoint_check = run_breakpoint_check)
   
   somatic_regions_df$correct <- run_somatic_correction_test(somatic_regions_df)

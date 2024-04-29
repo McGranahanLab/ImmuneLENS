@@ -10,34 +10,36 @@
 
 somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, run_breakpoint_check = FALSE, 
                                    rpart_cp = 0.01){
+  reads <- germline_reads <- tumour_reads <- pos <- kb_bin <- logR <- start <- end <- start_kb <- end_kb <- check_overlap_both_sides <- ratio <- NULL
+  
   # Blacklist most focal part of IGH cs and VDJ region
   # CS focal: 105712500 - 105860500 (IGHA1 - IGHM) 105712-105860
   # VDJ focal: 105865458 - 105939756 (J - V) 105865-105939
   germline_cov_orig <- germline_cov
   tumour_cov_orig <- tumour_cov
   if(gc_correct){
-    germline_cov  <- IGH_gc_correct_alt(germline_cov)
-    tumour_cov  <- IGH_gc_correct_alt(tumour_cov)
+    germline_cov  <- IGH_gc_correct(germline_cov)
+    tumour_cov  <- IGH_gc_correct(tumour_cov)
   } 
   
   logR_df <- germline_cov %>%
-    rename(germline_reads = reads) %>%
-    left_join(tumour_cov,'pos') %>%
-    rename(tumour_reads = reads) %>%
-    mutate(germline_reads = germline_reads/median(germline_cov$reads, na.rm = TRUE)) %>%
-    mutate(tumour_reads = tumour_reads/median(tumour_cov$reads, na.rm = TRUE)) %>%
-    mutate(logR = log2((tumour_reads/germline_reads) + 1)) %>%
-    mutate(kb_bin = pos %/% 1000) %>% 
-    filter(! (kb_bin >= 105712 & kb_bin <= 105860)) %>%
-    filter(! (kb_bin >= 105865 & kb_bin <= 105939)) %>%
-    group_by(kb_bin) %>%
-    summarise(germline_reads = median(germline_reads, na.rm = TRUE),
+    dplyr::rename(germline_reads = reads) %>%
+    dplyr::left_join(tumour_cov,'pos') %>%
+    dplyr::rename(tumour_reads = reads) %>%
+    dplyr::mutate(germline_reads = germline_reads/median(germline_cov$reads, na.rm = TRUE)) %>%
+    dplyr::mutate(tumour_reads = tumour_reads/median(tumour_cov$reads, na.rm = TRUE)) %>%
+    dplyr::mutate(logR = log2((tumour_reads/germline_reads) + 1)) %>%
+    dplyr::mutate(kb_bin = pos %/% 1000) %>% 
+    dplyr::filter(! (kb_bin >= 105712 & kb_bin <= 105860)) %>%
+    dplyr::filter(! (kb_bin >= 105865 & kb_bin <= 105939)) %>%
+    dplyr::group_by(kb_bin) %>%
+    dplyr::summarise(germline_reads = median(germline_reads, na.rm = TRUE),
               tumour_reads = median(tumour_reads, na.rm = TRUE),
               logR = median(logR, na.rm = TRUE))
   
   logR_df <- logR_df %>%
-    filter(!is.na(logR)) %>%
-    filter(!is.infinite(logR))
+    dplyr::filter(!is.na(logR)) %>%
+    dplyr::filter(!is.infinite(logR))
   
   # Segment this into line segments - how?
   # logR_roll <- zoo::rollmedian(logR_df$logR,k = 51)
@@ -67,37 +69,37 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
   logR_summary_list <- list()
   for(i in seq_len(dim(sm_segment_ranges_df)[1])){
     logR_summary_list[[i]] <- logR_df %>%
-      filter(kb_bin >= sm_segment_ranges_df$start[i]) %>%
-      filter(kb_bin <= sm_segment_ranges_df$end[i]) %>%
-      summarise(germline_reads = median(germline_reads,na.rm = TRUE),
+      dplyr::filter(kb_bin >= sm_segment_ranges_df$start[i]) %>%
+      dplyr::filter(kb_bin <= sm_segment_ranges_df$end[i]) %>%
+      dplyr::summarise(germline_reads = median(germline_reads,na.rm = TRUE),
                 tumour_reads = median(tumour_reads, na.rm = TRUE),
                 logR = median(logR, na.rm = TRUE)) %>%
-      mutate(start = sm_segment_ranges_df$start[i],
+      dplyr::mutate(start = sm_segment_ranges_df$start[i],
              end = sm_segment_ranges_df$end[i]) %>%
-      select(start, end, germline_reads, tumour_reads, logR)
+      dplyr::select(start, end, germline_reads, tumour_reads, logR)
   }
   logR_summary_df <- data.table::rbindlist(logR_summary_list) %>%
-    mutate(kb_len = end - start)
+    dplyr::mutate(kb_len = end - start)
   
   
   # Identify which ranges are the baseline and should not change
   baseline.loc <- which.min(abs(1 - logR_summary_df$logR))
   baseline.median <- tumour_cov_orig %>%
-    filter(pos > logR_summary_df[baseline.loc, 'start'][[1]] * 1000) %>%
-    filter(pos < logR_summary_df[baseline.loc, 'end'][[1]] * 1000) %>%
-    filter(! (pos >= 105712*1000 & pos <= 105860*1000)) %>%
-    filter(! (pos  >= 105865*1000 & pos <= 105939*1000)) %>%
-    select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
+    dplyr::filter(pos > logR_summary_df[baseline.loc, 'start'][[1]] * 1000) %>%
+    dplyr::filter(pos < logR_summary_df[baseline.loc, 'end'][[1]] * 1000) %>%
+    dplyr::filter(! (pos >= 105712*1000 & pos <= 105860*1000)) %>%
+    dplyr::filter(! (pos  >= 105865*1000 & pos <= 105939*1000)) %>%
+    dplyr::select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
   
   # Make regions_sm_df object for tumour reads
   sm_segment_ranges_df2 <- list()
   for(i in seq_len(dim(sm_segment_ranges_df)[1])){
     test.median <- tumour_cov_orig %>%
-      filter(pos > logR_summary_df[i, 'start'][[1]] * 1000) %>%
-      filter(pos < logR_summary_df[i, 'end'][[1]] * 1000) %>%
-      filter(! (pos >= 105712*1000 & pos <= 105860*1000)) %>%
-      filter(! (pos  >= 105865*1000 & pos <= 105939*1000)) %>%
-      select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
+      dplyr::filter(pos > logR_summary_df[i, 'start'][[1]] * 1000) %>%
+      dplyr::filter(pos < logR_summary_df[i, 'end'][[1]] * 1000) %>%
+      dplyr::filter(! (pos >= 105712*1000 & pos <= 105860*1000)) %>%
+      dplyr::filter(! (pos  >= 105865*1000 & pos <= 105939*1000)) %>%
+      dplyr::select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
     reads_seg <- test.median/baseline.median
     sm_segment_ranges_df2[[i]] <- data.frame(start_kb = sm_segment_ranges_df$start[i],
                                              end_kb = sm_segment_ranges_df$end[i],
@@ -112,23 +114,23 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
   sm_segment_ranges_df2$bin_size <- 1000
   
   sm_segment_ranges_df2 <- sm_segment_ranges_df2 %>%
-    mutate(reads_seg = ifelse(abs(1-logR) < 0.05, 1, reads_seg))
+    dplyr::mutate(reads_seg = ifelse(abs(1-logR) < 0.05, 1, reads_seg))
   
   
   break_point_check <- sm_segment_ranges_df2 %>%
-    filter(start_kb < 105939 & end_kb > 105712) %>%
-    select(reads_seg) %>% `[[`(1) %>% `!=`(1) %>% any()
+    dplyr::filter(start_kb < 105939 & end_kb > 105712) %>%
+    dplyr::select(reads_seg) %>% `[[`(1) %>% `!=`(1) %>% any()
   
   if(break_point_check & run_breakpoint_check){
     segs_to_check <- sm_segment_ranges_df2 %>%
-      filter(start_kb < 105939 & end_kb > 105712)
+      dplyr::filter(start_kb < 105939 & end_kb > 105712)
     segs_to_check <- segs_to_check %>%
-      filter(reads_seg != 1)
+      dplyr::filter(reads_seg != 1)
     # Finally make sure that start and end are not both outside the focal regions
     segs_to_check <- segs_to_check %>% 
-      mutate(check_overlap_both_sides = start_kb < 105712 & end_kb > 105939)
+      dplyr::mutate(check_overlap_both_sides = start_kb < 105712 & end_kb > 105939)
     segs_to_check <- segs_to_check %>% 
-      filter(!check_overlap_both_sides)
+      dplyr::filter(!check_overlap_both_sides)
     
     # If deletion test if it goes up suddenly within focal region
     for(i in seq_len(dim(segs_to_check)[1])){
@@ -140,15 +142,15 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
       # Median of reads before the focal region
       if(tmp_start < 105712){
         tmp_median <- tumour_cov_orig %>%
-          filter(pos >= tmp_start * 1000) %>%
-          filter(pos < 105712 * 1000) %>%
-          select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
+          dplyr::filter(pos >= tmp_start * 1000) %>%
+          dplyr::filter(pos < 105712 * 1000) %>%
+          dplyr::select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
       }else{
         if(tmp_start > 105712 & tmp_end > 105939){
           tmp_median <- tumour_cov_orig %>%
-            filter(pos > 105939 * 1000) %>%
-            filter(pos <= tmp_end * 1000) %>%
-            select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
+            dplyr::filter(pos > 105939 * 1000) %>%
+            dplyr::filter(pos <= tmp_end * 1000) %>%
+            dplyr::select(reads) %>% `[[`(1) %>% median(na.rm = TRUE)
           
         }else{
           next
@@ -159,12 +161,12 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
       tmp_end_min <- min(tmp_end, 105939)
       
       tmp_ratio <- tumour_cov_orig %>%
-        filter(pos >=  tmp_start_max * 1000) %>%
-        filter(pos < tmp_end_min*1000) %>%
-        mutate(ratio = reads/tmp_median) %>%
-        mutate(kb_bin = pos %/% 1000) %>%
-        group_by(kb_bin) %>%
-        summarise(reads_average = median(ratio, na.rm = TRUE))
+        dplyr::filter(pos >=  tmp_start_max * 1000) %>%
+        dplyr::filter(pos < tmp_end_min*1000) %>%
+        dplyr::mutate(ratio = reads/tmp_median) %>%
+        dplyr::mutate(kb_bin = pos %/% 1000) %>%
+        dplyr::group_by(kb_bin) %>%
+        dplyr::summarise(reads_average = median(ratio, na.rm = TRUE))
       
       tree2 <- rpart::rpart(reads_average~ kb_bin, data=tmp_ratio)
       tree.splits.loc2 <- as.numeric(tree2$splits[,'index'])
@@ -184,18 +186,18 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
       focal_segment_list <- list()
       for(j in seq_len(dim(focal_segment_ranges_df)[1])){
         focal_segment_list[[j]] <-  tumour_cov_orig %>%
-          filter(pos >= focal_segment_ranges_df$start[j] *1000) %>%
-          filter(pos <= focal_segment_ranges_df$end[j]*1000) %>%
-          summarise(tumour_reads = median(reads, na.rm = TRUE)) %>%
-          mutate(start = focal_segment_ranges_df$start[j],
+          dplyr::filter(pos >= focal_segment_ranges_df$start[j] *1000) %>%
+          dplyr::filter(pos <= focal_segment_ranges_df$end[j]*1000) %>%
+          dplyr::summarise(tumour_reads = median(reads, na.rm = TRUE)) %>%
+          dplyr::mutate(start = focal_segment_ranges_df$start[j],
                  end = focal_segment_ranges_df$end[j]) %>%
-          mutate(ratio = tumour_reads/tmp_median) %>%
-          select(start, end,tumour_reads, ratio)
+          dplyr::mutate(ratio = tumour_reads/tmp_median) %>%
+          dplyr::select(start, end,tumour_reads, ratio)
       }
       norm_value <- 1/segs_to_check$reads_seg[i]
       focal_summary_df <- data.table::rbindlist(focal_segment_list) %>%
-        mutate(kb_len = end - start) %>%
-        mutate(tumour_reads_compared_to_norm = norm_value/ratio)
+        dplyr::mutate(kb_len = end - start) %>%
+        dplyr::mutate(tumour_reads_compared_to_norm = norm_value/ratio)
       
       # IF the norm value looks like it matches a change set this as the breakpoint!
       breakpoint_change <- abs(focal_summary_df$tumour_reads_compared_to_norm -1)
@@ -217,7 +219,7 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
                                     logR = NA, bin_size = 1000)
           
           sm_segment_ranges_df2_update <- rbind(sm_segment_ranges_df2_update, new_segment) %>%
-            arrange(start_kb)
+            dplyr::arrange(start_kb)
           sm_segment_ranges_df2 <- sm_segment_ranges_df2_update
         }
         if(tmp_start > 105712 & tmp_end > 105939){
@@ -230,7 +232,7 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
                                     kb_length = (new_start - 1) - tmp_start, germline_reads = NA, tumour_reads = NA,
                                     logR = NA, bin_size = 1000)
           sm_segment_ranges_df2_update <- rbind(sm_segment_ranges_df2_update, new_segment) %>%
-            arrange(start_kb)
+            dplyr::arrange(start_kb)
           sm_segment_ranges_df2 <- sm_segment_ranges_df2_update
           
         }
@@ -243,3 +245,5 @@ somatic_cna_IGH_caller <- function(germline_cov, tumour_cov, gc_correct = TRUE, 
   
   return(sm_segment_ranges_df2)
 }
+
+

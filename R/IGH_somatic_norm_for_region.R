@@ -8,6 +8,7 @@
 
 
 IGH_somatic_norm_for_region <- function(input_cov, region_df, threshold_to_norm = 0.2){
+  start_kb <- end_kb <- reads_seg <- pos <- value <- reads <- update_reads <- NULL
   bin_size <- region_df$bin_size[1]
   # Region has already been defined
   ranges_to_normalise_long <- region_df %>%

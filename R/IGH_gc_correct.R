@@ -3,9 +3,11 @@
 #' @param input_cov data frame of positions and coverage values for IGH loci
 #' @param hg19_or38 default = 'hg38'
 #' @return  Data frame of GC corrected coverage values
-#' @name IGH_gc_correc
+#' @name IGH_gc_correct
 
 IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
+  X2 <- pos <- GC <- exon.GC <- smooth.gc <- reads.gc.correct <- reads <- exon.gc <-  NULL
+  
   # Run GC correction on coverage values before running haplotype norm
   # Use constrained linear model (restriktor)
   if(hg19_or38 == 'hg38'){
@@ -35,9 +37,9 @@ IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
     IGH.exons.loc[[i]] <- c(exons.selected$X2[i] - exon.adjust.loc,
                             exons.selected$X3[i] - exon.adjust.loc)
   }
-  exons.gc.content <- ImmuneLENS:::exonwindowplot2(IGH.exons.loc, VDJ_fasta[[1]],0)
+  exons.gc.content <- exonwindowplot2(IGH.exons.loc, VDJ_fasta[[1]],0)
   
-  gc.df <- ImmuneLENS:::slidingwindowplot_alt(1000, VDJ_fasta[[1]])
+  gc.df <- slidingwindowplot_alt(1000, VDJ_fasta[[1]])
   gc.df$pos <- gc.df$loc + exon.adjust.loc
   gam.model <- mgcv::gam(GC~s(pos, bs = 'cs'), data = gc.df)
   
@@ -45,7 +47,7 @@ IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
     mgcv::predict.gam(gam.model, newdata = data.frame(pos = x))}
   
   input_cov_gc <- input_cov %>%
-    dplyr::mutate(exon = ImmuneLENS:::exonPosFun_v(pos, IGH.exons)) %>%
+    dplyr::mutate(exon = exonPosFun_v(pos, IGH.exons)) %>%
     dplyr::left_join(exons.gc.content, 'exon') %>%
     dplyr::rename(exon.gc = GC) %>%
     dplyr::mutate(exon.gc2 = exon.gc^2) %>%
@@ -78,16 +80,18 @@ IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
   }
   
   cov.df.gc.update <- gc.lm.df %>%
-    rename(reads = reads.gc.correct)
+    dplyr::rename(reads = reads.gc.correct)
   # Finally make sure old zeros are still zeros
-  zero_pos <- input_cov %>% filter(reads == 0) %>% select(pos) %>% `[[`(1)
+  zero_pos <- input_cov %>% 
+    dplyr::filter(reads == 0) %>% 
+    dplyr::select(pos) %>% `[[`(1)
   zero_peak <- cov.df.gc.update %>% 
-    filter(pos %in% zero_pos) %>% select(reads) %>% `[[`(1) %>% 
+    dplyr::filter(pos %in% zero_pos) %>% dplyr::select(reads) %>% `[[`(1) %>% 
     median(na.rm = TRUE)
   
   cov.df.gc.update$reads <- cov.df.gc.update$reads - zero_peak
   cov.df.gc.update <- cov.df.gc.update %>% 
-    mutate(reads = ifelse(reads < 0, 0, reads))
+    dplyr::mutate(reads = ifelse(reads < 0, 0, reads))
   
   
   return(cov.df.gc.update)

@@ -6,9 +6,10 @@
 #' @return  regions used for later normalisation
 #' @name calc_haplotype_regions_de_novo_diploid
 
-
 calc_haplotype_regions_de_novo_diploid <- function(input_cov, kb_len_threshold = 5, bin_size = 1000){
   # Assumes diploid (run on germline sample if possible)
+  reads <- pos <- reads_norm <- reads_seg <- kb_bin <- reads_seg_average <- reads_seg_average_roll <- change <- change2 <- end_kb <- start_kb <- NULL
+  previous_and_current_greater_1 <- next_and_current_greater_1 <- greater_1_group <- greater_1_group_clust <- previous_and_current_less_1 <- next_and_current_less_1 <- less_1_group <- less_1_group_clust <- kb_group_length <- kb_length <- NULL
   norm.median <- median(input_cov$reads, na.rm = TRUE)
   
   for(i in 1:5){
@@ -28,7 +29,7 @@ calc_haplotype_regions_de_novo_diploid <- function(input_cov, kb_len_threshold =
     
     ranges_summary <- cov_df_segment_summary %>%
       dplyr::filter(!is.na(reads_seg_average_roll)) %>%
-      dplyr::mutate(change = ifelse(lag(reads_seg_average_roll, default = 0) != reads_seg_average_roll, 1,0)) %>%
+      dplyr::mutate(change = ifelse(dplyr::lag(reads_seg_average_roll, default = 0) != reads_seg_average_roll, 1,0)) %>%
       dplyr::mutate(change2 = cumsum(change)) %>%
       dplyr::group_by(change2) %>%
       dplyr::summarise(start_kb = dplyr::first(kb_bin),
@@ -37,16 +38,16 @@ calc_haplotype_regions_de_novo_diploid <- function(input_cov, kb_len_threshold =
       dplyr::mutate(kb_length = 1 + end_kb - start_kb)
     
     ranges_summary2 <- ranges_summary %>%
-      dplyr::mutate(previous_and_current_greater_1 = lag(reads_seg_average_roll > 1, default = FALSE) & reads_seg_average_roll > 1) %>%
-      dplyr::mutate(next_and_current_greater_1 = lead(reads_seg_average_roll > 1, default = FALSE) & reads_seg_average_roll > 1) %>%
+      dplyr::mutate(previous_and_current_greater_1 = dplyr::lag(reads_seg_average_roll > 1, default = FALSE) & reads_seg_average_roll > 1) %>%
+      dplyr::mutate(next_and_current_greater_1 = dplyr::lead(reads_seg_average_roll > 1, default = FALSE) & reads_seg_average_roll > 1) %>%
       dplyr::mutate(greater_1_group = previous_and_current_greater_1 | next_and_current_greater_1) %>%
-      dplyr::mutate(greater_1_group_clust = cumsum(greater_1_group & !lag(greater_1_group, default = FALSE))) %>%
+      dplyr::mutate(greater_1_group_clust = cumsum(greater_1_group & !dplyr::lag(greater_1_group, default = FALSE))) %>%
       dplyr::mutate(greater_1_group_clust = ifelse(greater_1_group, greater_1_group_clust, NA)) %>%
       dplyr::select(-greater_1_group, -previous_and_current_greater_1, -next_and_current_greater_1) %>%
-      dplyr::mutate(previous_and_current_less_1 = lag(reads_seg_average_roll < 1, default = FALSE) & reads_seg_average_roll < 1) %>%
-      dplyr::mutate(next_and_current_less_1 = lead(reads_seg_average_roll < 1, default = FALSE) & reads_seg_average_roll < 1) %>%
+      dplyr::mutate(previous_and_current_less_1 = dplyr::lag(reads_seg_average_roll < 1, default = FALSE) & reads_seg_average_roll < 1) %>%
+      dplyr::mutate(next_and_current_less_1 = dplyr::lead(reads_seg_average_roll < 1, default = FALSE) & reads_seg_average_roll < 1) %>%
       dplyr::mutate(less_1_group = previous_and_current_less_1 | next_and_current_less_1) %>%
-      dplyr::mutate(less_1_group_clust = cumsum(less_1_group & !lag(less_1_group, default = FALSE))) %>%
+      dplyr::mutate(less_1_group_clust = cumsum(less_1_group & !dplyr::lag(less_1_group, default = FALSE))) %>%
       dplyr::mutate(less_1_group_clust = ifelse(less_1_group, less_1_group_clust, NA)) %>%
       dplyr::select(-less_1_group, -previous_and_current_less_1, -next_and_current_less_1) 
     
@@ -94,8 +95,8 @@ calc_haplotype_regions_de_novo_diploid <- function(input_cov, kb_len_threshold =
         dplyr::rowwise() %>%
         dplyr::mutate(kb_bin = list(start_kb:end_kb)) %>%
         tidyr::unnest(kb_bin) %>%
-        select(-start_kb, -end_kb) %>%
-        select(kb_bin, reads_seg)  
+        dplyr::select(-start_kb, -end_kb) %>%
+        dplyr::select(kb_bin, reads_seg)  
       
       norm.median <- input_cov %>%
         dplyr::mutate(kb_bin = pos %/% bin_size) %>%

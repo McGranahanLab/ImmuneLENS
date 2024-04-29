@@ -22,7 +22,9 @@ Imports:
     ggplot2,
     magrittr,
     tibble,
-    restriktor
+    restriktor,
+    data.table,
+    rpart
 Suggests:
     devtools, 
     packcircles,
@@ -30,5 +32,6 @@ Suggests:
     rmarkdown
 License: file LICENSE
 Encoding: UTF-8
+LazyDataCompression: xz
 LazyData: true
 RoxygenNote: 7.2.3
