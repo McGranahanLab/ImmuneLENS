@@ -83,7 +83,7 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
 
   create_col_seg <- function(input_df, start_pos, end_pos,col.name){
     input_df <- input_df %>%
-      dplyr::mutate(X1= ifelse(pos >= start_pos & pos <= end_pos, 1, 0))
+      dplyr::mutate(X1= as.integer(ifelse(pos >= start_pos & pos <= end_pos, 1, 0)))
     colnames(input_df)[which(colnames(input_df) == 'X1')] <- col.name
     return(input_df)
   }
