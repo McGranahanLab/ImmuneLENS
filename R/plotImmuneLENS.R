@@ -4,7 +4,6 @@
 #' @param vdj.gene VDJ gene to be plotted
 #' @param hg19_or_38 hg19 or hg38 version of genome
 #' @param GC_correct TRUE or FALSE, whether to correct for GC content
-#' @param GC_mode GC correct running 'simultaneous' to linear model or 'prior'
 #' @param sample_name name of sample run
 #' @param median.k rolling median window
 #' @param median.thresh threshold to remove exons with low coverage
@@ -14,7 +13,6 @@
 #' @param customSeg Custom df defining normalisation segments
 #' @param customFasta Custom fasta file
 #' @param customFlag Custom list of flagged exons to remove
-#' @param restriktor.absval parameter for fitting model with restriktor
 #' @param ylims limits for y axis
 #' @param removed_flag Whether to removed flagged WGS locations (default = TRUE)
 #' @param output_df If true return data frame used for plotting instead of plot
@@ -33,7 +31,6 @@
 
 plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                  hg19_or_38 = 'hg38',GC_correct = TRUE,
-                                 GC_mode = 'simultaneous',
                                  median.k = 50, median.thresh = 15,
                                  sample_name = 'test',
                                  num.points = 3000,
@@ -42,7 +39,6 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                  customSeg = NULL,
                                  customFasta = NULL,
                                  customFlag = NULL,
-                                 restriktor.absval = 1e-5,
                                  removed_flag = TRUE,
                                  output_df = FALSE,
                                  classSwitch = TRUE,
@@ -254,47 +250,19 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
   exons.gc.content <- exonwindowplot2(TCRA.exons.loc, VDJ_fasta[[1]],0)
 
 
-  if(GC_correct == TRUE & GC_mode == 'prior'){
 
-    # Make GC correct ratio the input
-    vdj.example.df$origRatio <- vdj.example.df$Ratio
-    vdj.example.df$Ratio <- vdj.example.df$Ratio.gc.correct
-
-    vdj.example.fit.df <- getVDJfraction_ImmuneLENS(vdj.example.df[,c(1,2)],
-                                                      vdj.gene, sample_name,
-                                                      hg19_or_38,
-                                                      GC.correct = FALSE,
-                                                      restriktor.absval = restriktor.absval,
-                                                      exons = exons.selected,
-                                                      exonList = exons.gc.content,
-                                                      gene.fasta = VDJ_fasta,
-                                                      gene.fasta.start = exon.adjust.loc,
-                                                      classSwitch = classSwitch,
-                                                      customNorm = customNorm)
-
-  }else{
-
-    vdj.example.fit.df <- getVDJfraction_ImmuneLENS(vdj.example.df[,c(1,2)],
+  vdj.example.fit.df <- getVDJfraction_ImmuneLENS(vdj.example.df[,c(1,2)],
                                                       vdj.gene, sample_name,
                                                       hg19_or_38,
                                                       GC.correct = GC_correct,
-                                                      restriktor.absval = restriktor.absval,
                                                       exons = exons.selected,
                                                       exonList = exons.gc.content,
                                                       gene.fasta = VDJ_fasta,
                                                       gene.fasta.start = exon.adjust.loc,
-                                                      classSwitch = classSwitch,
-                                                      customNorm = customNorm,
                                                       IGH.gc.constraint = IGH_gc_constraint,
                                                       TCRB.gc.constraint = TCRB_gc_constraint,
                                                       IGH.gc.constraint.value = IGH_gc_constraint_value,
                                                       allGC = allGC)
-
-  }
-
-
-
-
 
   # 3. Prepare ranges object
   if(vdj.gene == 'TCRA'){
@@ -391,8 +359,6 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
     }
   }
 
-
-
   # 4. Prepare to plot
 
   exclude.segs2 <- c('exon.gc','exon.gc2','smooth.gc','smooth.gc2')
@@ -461,11 +427,8 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                       paste0(gsub('TC','T',vdj.gene),'V'), paste0(vdj.gene,'V'))
   # Add in parameters from function for adjusting sizes
   # Add in text annontation (cell fraction + diversity + sample name?)
-
-  # If GC_mode = 'prior' can use Ratio.gc.correct
-  # If GC_mode = 'simultaneous' we need to use the solutions to the model
   # to calculate a correction value
-  if(GC_correct == TRUE & GC_mode == 'simultaneous'){
+  if(GC_correct == TRUE){
 
     if(!is.null(customNorm)){
       norm.names <- setdiff(colnames(customNorm),'exon2')

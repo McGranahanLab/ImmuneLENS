@@ -3,11 +3,9 @@
 #' @param vdj_logR_input data frame of positions and coverage values
 #' @param vdj_seg Segments used for normalisation
 #' @param GCcorrect Use GC corrected output or not
-#' @importFrom stats sd confint
-#' @import gratia
+#' @importFrom stats sd 
 #' @return Adjusted baseline logR dataframe
 #' @name baselineAdj
-
 
 baselineAdj <- function(vdj_logR_input, vdj_seg, GCcorrect = TRUE){
 
@@ -30,21 +28,23 @@ baselineAdj <- function(vdj_logR_input, vdj_seg, GCcorrect = TRUE){
     adjust.model <- mgcv::gam(Ratio~s(pos, bs = 'cs'), data = vdj_logR_input)
   }
 
-
-  adjust.fit.model <- confint(adjust.model, parm = "s(pos)",
-                                           partial_match = TRUE, type = 'simultaneous',
-                                           data = data.frame(pos = seq(vdj_seg[2,2], vdj_seg[2,3],by=100)),
-                                           shift = TRUE)
-  fit.loc <- which(adjust.fit.model$pos > vdj_seg[2,2] & adjust.fit.model$pos < vdj_seg[2,3])
-  adjust.baseline.value2 <- list(mean(adjust.fit.model$est[fit.loc],na.rm = TRUE),
-                                 mean(adjust.fit.model$upper[fit.loc],na.rm = TRUE) - mean(adjust.fit.model$est[fit.loc],na.rm = TRUE))
+  # Define the sequence of positions for prediction
+  pos_sequence <- seq(vdj_seg[2, 2], vdj_seg[2, 3], by = 100)
+  
+  # Predict values for the sequence
+  adjust.fit.values <- mgcv::predict.gam(adjust.model, newdata = data.frame(pos = pos_sequence),
+                                      type = "response")
+  
+  # Filter the predictions to be within the desired range
+  fit.loc <- which(pos_sequence > vdj_seg[2, 2] & pos_sequence < vdj_seg[2, 3])
+  
+  # Calculate the mean of the predictions within the range
+  adjust.baseline.value2 <- list(mean(adjust.fit.values[fit.loc], na.rm = TRUE))
 
   adjust.value <- max(adjust.baseline.value[[1]], adjust.baseline.value2[[1]])
-  ci.95.value <- ifelse(adjust.baseline.value2[[1]] > adjust.baseline.value[[1]],
-                        adjust.baseline.value2[[2]], adjust.baseline.value[[2]])
 
 
   vdj_logR_input[[ratio.col]] <- vdj_logR_input[[ratio.col]] - adjust.value
-  return(list(vdj_logR_input, ci.95.value))
+  return(list(vdj_logR_input))
 }
 

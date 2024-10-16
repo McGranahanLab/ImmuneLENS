@@ -1,14 +1,13 @@
 Package: ImmuneLENS
 Type: Package
 Title: Immune Lymphocyte Estimation from Nucleotide Sequencing
-Version: 1.0.1
+Version: 1.0.2
 Author: Robert Bentham
 Maintainer: Robert Bentham <robert.bentham.11@ucl.ac.uk>
 Description: Immune Lymphocyte Estimation from Nucleotide Sequencing (Immune LENS) is an R package to calculate T and B cell fractions from WGS or WES data from hg19 or hg38 aligned genomes. Includes functions from TcellExTRECT package for support of WES analysis.
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.5.0),
-    gratia
+    R (>= 3.5.0)
 Imports:
     dplyr,
     tidyr,
@@ -24,7 +23,9 @@ Imports:
     tibble,
     restriktor,
     data.table,
-    rpart
+    quadprog,
+    rpart,
+    lavaan
 Suggests:
     devtools, 
     packcircles,

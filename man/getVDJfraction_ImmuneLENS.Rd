@@ -10,14 +10,11 @@ getVDJfraction_ImmuneLENS(
   sample_name,
   hg19_or_38 = "hg38",
   GC.correct = TRUE,
-  restriktor.absval = 1e-05,
   exons = NULL,
   exonList = NULL,
   gene.fasta = NULL,
   gene.fasta.start = NULL,
   sliding = 1000,
-  classSwitch = TRUE,
-  customNorm = NULL,
   IGH.gc.constraint = TRUE,
   IGH.gc.constraint.value = 0.01,
   TCRB.gc.constraint = TRUE,
@@ -35,8 +32,6 @@ getVDJfraction_ImmuneLENS(
 
 \item{GC.correct}{whether GC.correct is being used}
 
-\item{restriktor.absval}{Parameter for use in Restriktor}
-
 \item{exons}{Location of exons}
 
 \item{exonList}{GC content of exons}
@@ -46,10 +41,6 @@ getVDJfraction_ImmuneLENS(
 \item{gene.fasta.start}{offset for FASTA file, e.g 21999999 for TCRA in hg19}
 
 \item{sliding}{number of bp for gc windows (default = 1000)}
-
-\item{classSwitch}{Whether to include class switching in model for IGH (default = TRUE)}
-
-\item{customNorm}{Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)}
 
 \item{IGH.gc.constraint}{TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)}
 

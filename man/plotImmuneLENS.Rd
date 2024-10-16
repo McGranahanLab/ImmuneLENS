@@ -9,7 +9,6 @@ plotImmuneLENS(
   vdj.gene = "TCRA",
   hg19_or_38 = "hg38",
   GC_correct = TRUE,
-  GC_mode = "simultaneous",
   median.k = 50,
   median.thresh = 15,
   sample_name = "test",
@@ -20,7 +19,6 @@ plotImmuneLENS(
   customSeg = NULL,
   customFasta = NULL,
   customFlag = NULL,
-  restriktor.absval = 1e-05,
   removed_flag = TRUE,
   output_df = FALSE,
   classSwitch = TRUE,
@@ -39,8 +37,6 @@ plotImmuneLENS(
 \item{hg19_or_38}{hg19 or hg38 version of genome}
 
 \item{GC_correct}{TRUE or FALSE, whether to correct for GC content}
-
-\item{GC_mode}{GC correct running 'simultaneous' to linear model or 'prior'}
 
 \item{median.k}{rolling median window}
 
@@ -61,8 +57,6 @@ plotImmuneLENS(
 \item{customFasta}{Custom fasta file}
 
 \item{customFlag}{Custom list of flagged exons to remove}
-
-\item{restriktor.absval}{parameter for fitting model with restriktor}
 
 \item{removed_flag}{Whether to removed flagged WGS locations (default = TRUE)}
 

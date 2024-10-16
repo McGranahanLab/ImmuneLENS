@@ -8,13 +8,8 @@
 #' @param median.thresh threshold to remove exons with low coverage
 #' @param sample_name name of sample run
 #' @param customSeg Custom df defining normalisation segments
-#' @param customFasta Custom fasta file
 #' @param customFlag Custom list of flagged exons to remove
-#' @param restriktor.absval parameter for fitting model with restriktor
 #' @param removed_flag Whether to removed flagged WGS locations (default = TRUE)
-#' @param GC_mode Run GC correct 'simultaneous' or 'prior' to fitting linear model
-#' @param classSwitch_input Whether to include class switching in model for IGH (default = TRUE)
-#' @param customNorm Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)
 #' @param IGH_gc_constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)
 #' @param IGH_gc_constraint_value Value to constrain IGH solution (default 0.01) 
 #' @param TCRB_gc_constraint TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the TCRB solution (default TRUE to prevent over-fitting)
@@ -29,21 +24,16 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                             median.k = 50, median.thresh = 15,
                                             sample_name = 'test',
                                             customSeg = NULL,
-                                            customFasta = NULL,
                                             customFlag = NULL,
-                                            restriktor.absval = 1e-5,
                                             removed_flag = TRUE,
-                                            GC_mode = 'simultaneous',
-                                            classSwitch_input = TRUE,
-                                            customNorm = NULL,
                                             IGH_gc_constraint = TRUE,
                                             TCRB_gc_constraint = TRUE,
                                             IGH_gc_constraint_value = 0.01,
                                             allGC = FALSE){
 
   X2 <- exon2 <- pos <- NULL
-  vdj.chr.df <- data.frame(gene = c('TCRA','TCRB','TCRG','IGH','IGL','IGK', 'TCRD'),
-                           chr = c('chr14','chr7','chr7','chr14','chr22','chr2','chr14'))
+  vdj.chr.df <- data.frame(gene = c('TCRA','TCRB','TCRG','IGH'),
+                           chr = c('chr14','chr7','chr7','chr14'))
 
   if(is.null(customSeg)){
     # data("vdj_seg_list")
@@ -53,9 +43,7 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
     vdj.seg <- customSeg
   }
 
-  if(!is.null(customFasta)){
-    VDJ_fasta <- seqinr::read.fasta(customFasta)
-  }else{
+
     if(hg19_or_38 == 'hg19'){
       # data("all_fasta")
       VDJ_fasta <- all_fasta[[vdj.gene]]
@@ -63,7 +51,6 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
       # data("all_fasta_hg38")
       VDJ_fasta <- all_fasta_hg38[[vdj.gene]]
     }
-  }
 
   vdj.chr <- vdj.chr.df$chr[which(vdj.chr.df$gene == vdj.gene)]
   vdj.start <- vdj.seg[1,2]
@@ -99,7 +86,7 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
     }else{
       exons.flaged <- flagged_exons[[vdj.gene]][[1]]
     }
-    vdj.region.df <-vdj.region.df %>%
+    vdj.region.df <- vdj.region.df %>%
       dplyr::mutate(exon2 = (pos - vdj.start + 100) %/% 100) %>%
       dplyr::filter(!exon2 %in% exons.flaged) %>%
       dplyr::select(-exon2)
@@ -131,46 +118,20 @@ runImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
     return(NA)}
 
   if(GC_correct){
-    if(GC_mode == 'simultaneous'){
       vdj.fraction.output  <-  getVDJfraction_ImmuneLENS(vdj.logR.df, vdj.gene, sample_name, hg19_or_38,
-                                                           GC.correct = TRUE, restriktor.absval = restriktor.absval,
+                                                           GC.correct = TRUE, 
                                                            exons = exons.selected,
                                                            exonList = exons.gc.content,
                                                            gene.fasta = VDJ_fasta,
                                                            gene.fasta.start = exon.adjust.loc,
-                                                           classSwitch = classSwitch_input,
-                                                           customNorm = customNorm,
                                                            IGH.gc.constraint = IGH_gc_constraint,
                                                            TCRB.gc.constraint = TCRB_gc_constraint,
                                                            IGH.gc.constraint.value =  IGH_gc_constraint_value,
                                                            allGC = allGC)
-    }
-    if(GC_mode == 'prior'){
-      vdj.logR.df <- GCcorrect_WGS(vdj.logR.df,
-                                   exons = exons.selected,
-                                   exonList = exons.gc.content,
-                                   gene.fasta = VDJ_fasta,
-                                   gene.fasta.start = exon.adjust.loc)
-      baselineAdj.out <- baselineAdj(vdj.logR.df,
-                                     vdj.seg, GCcorrect = TRUE)
-      vdj.logR.df <-baselineAdj.out[[1]]
-
-      vdj.logR.df$origRatio <- vdj.logR.df$Ratio
-      vdj.logR.df$Ratio <- vdj.logR.df$Ratio.gc.correct
-      vdj.fraction.output  <-  getVDJfraction_ImmuneLENS(vdj.logR.df, vdj.gene, sample_name, hg19_or_38,
-                                                           GC.correct = FALSE, restriktor.absval = restriktor.absval,
-                                                           exons = exons.selected,
-                                                           exonList = exons.gc.content,
-                                                           gene.fasta = VDJ_fasta,
-                                                           gene.fasta.start = exon.adjust.loc,
-                                                           classSwitch = classSwitch_input)
-
-    }
 
   }else{
     vdj.fraction.output  <- getVDJfraction_ImmuneLENS(vdj.logR.df, vdj.gene, sample_name, hg19_or_38,
-                                                       GC.correct = FALSE, restriktor.absval = restriktor.absval,
-                                                       classSwitch = classSwitch_input)
+                                                       GC.correct = FALSE)
   }
 
   out.df <- vdj.fraction.output

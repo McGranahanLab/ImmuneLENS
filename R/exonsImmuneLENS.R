@@ -125,15 +125,13 @@ exonsImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                  hg19_or38 = hg19_or_38)
     baselineAdj.out <- baselineAdj(vdj.logR.df,
                                    vdj.seg, GCcorrect = TRUE)
-    vdj.logR.df <-baselineAdj.out[[1]]
-    ci.95.value <- baselineAdj.out[[2]]
+    vdj.logR.df <- baselineAdj.out[[1]] 
 
    # vdj.fraction.output  <-  getVDJfraction_segmodel(vdj.logR.df, sample_name, hg19_or_38)
 
   }else{
     baselineAdj.out <- baselineAdj(vdj.logR.df, vdj.seg, GCcorrect = FALSE)
     vdj.logR.df <-baselineAdj.out[[1]]
-    ci.95.value <- baselineAdj.out[[2]]
 
    # vdj.fraction.output  <- getVDJfraction_segmodel(vdj.logR.df, sample_name,hg19_or_38)
   }

@@ -13,13 +13,8 @@ runImmuneLENS(
   median.thresh = 15,
   sample_name = "test",
   customSeg = NULL,
-  customFasta = NULL,
   customFlag = NULL,
-  restriktor.absval = 1e-05,
   removed_flag = TRUE,
-  GC_mode = "simultaneous",
-  classSwitch_input = TRUE,
-  customNorm = NULL,
   IGH_gc_constraint = TRUE,
   TCRB_gc_constraint = TRUE,
   IGH_gc_constraint_value = 0.01,
@@ -43,19 +38,9 @@ runImmuneLENS(
 
 \item{customSeg}{Custom df defining normalisation segments}
 
-\item{customFasta}{Custom fasta file}
-
 \item{customFlag}{Custom list of flagged exons to remove}
 
-\item{restriktor.absval}{parameter for fitting model with restriktor}
-
 \item{removed_flag}{Whether to removed flagged WGS locations (default = TRUE)}
-
-\item{GC_mode}{Run GC correct 'simultaneous' or 'prior' to fitting linear model}
-
-\item{classSwitch_input}{Whether to include class switching in model for IGH (default = TRUE)}
-
-\item{customNorm}{Custom dataframe with average values to normalise for, summarised over 100bp (default = NULL)}
 
 \item{IGH_gc_constraint}{TRUE/FALSE, use additional constraints for GC correction smooth.gc and smooth.gc2 in the IGH solution (default TRUE to prevent over-fitting)}
 

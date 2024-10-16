@@ -57,7 +57,7 @@ IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
   # Finally normalise by the GC content
   gc.lm <- lm(reads ~ exon.gc + exon.gc2 + smooth.gc + smooth.gc2,
               y = TRUE, data = input_cov_gc)
-  # Do constrained linear model using restriktor - what are the constraints???? 
+  
   # Running test on data to see:
   myConstraints <- 'smooth.gc > 10 \n smooth.gc2 < 0 \n -1*smooth.gc2 == smooth.gc'
   restr.lm <- restriktor::conLM.lm(gc.lm,
