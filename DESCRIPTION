@@ -21,9 +21,9 @@ Imports:
     ggplot2,
     magrittr,
     tibble,
-    restriktor,
     data.table,
     quadprog,
+    ggpubr,
     rpart,
     lavaan
 Suggests:

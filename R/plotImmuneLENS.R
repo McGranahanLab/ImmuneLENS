@@ -487,7 +487,7 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                        yend = next_logR, col = logRgroup),data = tcra.seg.sol.df,
                    size = 1) +
       scale_colour_manual(values = c('darkred', 'darkblue')) +
-      theme_bw() +
+      ggpubr::theme_pubr() +
       theme(legend.position = 'none',
       ) +
       ggtitle(paste0(sample_name,': ',vdj.gene,' ',t_or_b,' cell fraction = ',
@@ -506,7 +506,7 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                        yend = next_logR, col = logRgroup),data = tcra.seg.sol.df,
                    size = 1) +
       scale_colour_manual(values = c('darkred', 'darkblue')) +
-      theme_bw() +
+      ggpubr::theme_pubr() +
       theme(legend.position = 'none',
       ) +
       ggtitle(paste0(sample_name,': ',vdj.gene,' ',t_or_b,' cell fraction = ',

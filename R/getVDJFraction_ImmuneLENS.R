@@ -404,6 +404,7 @@ calculateSegmentRanges <- function(vdj.gene, hg19_or_38,
   hgnc_symbol <- start_position_hg38 <- end_position_hg38 <- NULL
   start_position_hg19 <- end_position_hg19 <- NULL
  
+  new_seg_name <- NA
   
   if(vdj.gene == 'TCRA'){
     if(hg19_or_38 == 'hg38'){
@@ -507,9 +508,9 @@ calculateSegmentRanges <- function(vdj.gene, hg19_or_38,
                                       start -1))
         
         J_seg_loc <- which(segment.ranges$next_segType == 'J')
-        next_seg_name <- paste0(segment.ranges$segName[J_seg_loc[1]],'_',
+        new_seg_name <- paste0(segment.ranges$segName[J_seg_loc[1]],'_',
                                 segment.ranges$segName[J_seg_loc[1] + 1])
-        segment.ranges$segName[J_seg_loc[1]] <- next_seg_name
+        segment.ranges$segName[J_seg_loc[1]] <- new_seg_name
         segment.ranges <- segment.ranges[-c(J_seg_loc[1] + 1), ]
         segment.ranges <- segment.ranges %>%
           dplyr::select(segName, start = start2, end = end2) %>%
@@ -537,10 +538,10 @@ calculateSegmentRanges <- function(vdj.gene, hg19_or_38,
                                         start -1))
           
           V_seg_loc <- which(segment.ranges$next_segType == 'V')
-          next_seg_name <- paste0(segment.ranges$segName[V_seg_loc[1]],'_',
+          new_seg_name <- paste0(segment.ranges$segName[V_seg_loc[1]],'_',
                                   segment.ranges$segName[V_seg_loc[1] + 1])
           
-          segment.ranges$segName[V_seg_loc[1]] <- next_seg_name
+          segment.ranges$segName[V_seg_loc[1]] <- new_seg_name
           segment.ranges <- segment.ranges[-c(V_seg_loc[1] + 1), ]
           segment.ranges <- segment.ranges %>%
             dplyr::select(segName, start = start2, end = end2) %>%
@@ -565,9 +566,9 @@ calculateSegmentRanges <- function(vdj.gene, hg19_or_38,
                                         start -1))
           
           J_seg_loc <- which(segment.ranges$next_segType == 'J')
-          next_seg_name <- paste0(segment.ranges$segName[J_seg_loc[1]],'_',
+          new_seg_name <- paste0(segment.ranges$segName[J_seg_loc[1]],'_',
                                   segment.ranges$segName[J_seg_loc[1] + 1])
-          segment.ranges$segName[J_seg_loc[1]] <- next_seg_name
+          segment.ranges$segName[J_seg_loc[1]] <- new_seg_name
           segment.ranges <- segment.ranges[-c(J_seg_loc[1] + 1), ]
           segment.ranges <- segment.ranges %>%
             dplyr::select(segName, start = start2, end = end2) %>%
@@ -576,9 +577,8 @@ calculateSegmentRanges <- function(vdj.gene, hg19_or_38,
         
       }
     }
-    return(list(segment.ranges, new_seg_name))
   }
-  
+  return(list(segment.ranges, new_seg_name))
   
 }
 
