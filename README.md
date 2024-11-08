@@ -39,8 +39,10 @@ install_github("McGranahanLab/ImmuneLENS")
 
 ### Method 2 - Downloaded from source
 
+Pull ImmuneLENS repository and run R CMD INSTALL 'PATH/TO/ImmuneLENS/' to create tar.gz file.
+
 ```r
-install.packages('PATH/To/ImmuneLENS/', repos=NULL, type ='source')
+install.packages('PATH/To/ImmuneLENS.tar.gz', repos=NULL, type ='source')
 ```
 
 ## Requirements
