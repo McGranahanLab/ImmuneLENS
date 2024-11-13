@@ -9,7 +9,7 @@ IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
   X2 <- pos <- GC <- exon.GC <- smooth.gc <- reads.gc.correct <- reads <- exon.gc <-  NULL
   
   # Run GC correction on coverage values before running haplotype norm
-  # Use constrained linear model (restriktor)
+  # Use constrained linear model 
   if(hg19_or38 == 'hg38'){
     VDJ_fasta <- ImmuneLENS::all_fasta_hg38[['IGH']]
     vdj.seg <- vdj_seg_list[['IGH_hg38']]
@@ -60,9 +60,11 @@ IGH_gc_correct <- function(input_cov, hg19_or38 = 'hg38'){
   
   # Running test on data to see:
   myConstraints <- 'smooth.gc > 10 \n smooth.gc2 < 0 \n -1*smooth.gc2 == smooth.gc'
+  
   restr.lm <- restriktor::conLM.lm(gc.lm,
                                    constraints = myConstraints,
-                                   se = 'none',mix.weights = 'none',
+                                   se = 'none',
+                                   mix_weights = 'none',
                                    control = list(absval = 1e-5))
   if(is.null(dim(restr.lm$residuals))){
     res.df <- restr.lm$residual
