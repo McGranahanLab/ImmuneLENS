@@ -27,7 +27,7 @@ install_missing_packages <- function(packages) {
   }
 }
 
-install_missing_packages()
+install_missing_packages(dependency.packages)
 ```
 
 ### Method 1 - Using devtools
