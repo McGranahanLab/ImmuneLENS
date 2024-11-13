@@ -584,7 +584,7 @@ calculateSegmentRanges <- function(vdj.gene, hg19_or_38,
 
 conLM.lm_custom <- function (y, X, so, weights,p,b.unrestr,Sigma,residuals,
                              constraint.OUT,terms,
-                             fitted, df.residual, segment.positions.lengths = segment.positions.lengths,
+                             fitted, df.residual,
                              norm_cols,  control = list()) 
 {
   Amat <- NULL
@@ -602,7 +602,6 @@ conLM.lm_custom <- function (y, X, so, weights,p,b.unrestr,Sigma,residuals,
 
   out.solver <- con_solver_lm_custom(X = X, y = y, w = weights, 
                                    Amat = Amat, meq = meq,
-                                   segment.positions.lengths = segment.positions.lengths,
                                    norm_cols = norm_cols,
                                    absval = ifelse(is.null(control$absval),
                                                    sqrt(.Machine$double.eps), control$absval),
@@ -653,7 +652,6 @@ conLM.lm_custom <- function (y, X, so, weights,p,b.unrestr,Sigma,residuals,
 con_solver_lm_custom <- function (X, y, w = NULL, Amat, meq, maxit = 10000,
                               absval = sqrt(.Machine$double.eps),
                               b.unrestr,
-                              segment.positions.lengths = segment.positions.lengths,
                               norm_cols) 
 {
   bvec <- rep(0, nrow(Amat))

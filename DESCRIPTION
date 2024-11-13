@@ -25,7 +25,8 @@ Imports:
     quadprog,
     ggpubr,
     rpart,
-    lavaan
+    lavaan,
+    restriktor (>= 0.5-90)
 Suggests:
     devtools, 
     packcircles,
