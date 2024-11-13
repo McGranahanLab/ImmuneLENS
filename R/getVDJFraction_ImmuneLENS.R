@@ -268,7 +268,6 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
   X <- as.matrix(test.logR2[,-c(1,2)])
   
   restr.lm <- conLM.lm_custom(y = y, X = X, so = so, weights = weights,p = p,
-                          segment.positions.lengths = segment.positions.lengths2,
                           b.unrestr = b.unrestr, Sigma = Sigma,
                           residuals = residuals, constraint.OUT = constraint.OUT,
                           terms = terms, fitted = fitted, df.residual = df.residual,
