@@ -26,6 +26,8 @@ install_missing_packages <- function(packages) {
     message("All packages are already installed.")
   }
 }
+
+install_missing_packages()
 ```
 
 ### Method 1 - Using devtools
