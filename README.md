@@ -11,7 +11,7 @@ First make sure all dependencies are installed:
 ```r
 dependency.packages <- c( 'dplyr', 'tidyr', 'ggnewscale', 'packcircles',
                          'readr','zoo', 'seqinr', 'rlang', 'mgcv', 'ggplot2',
-                         'magrittr', 'tibble', 'devtools', 'knitr',
+                         'magrittr', 'tibble', 'devtools', 'knitr', 'restriktor',
                          'rmarkdown', 'rpart','data.table','quadprog','lavaan','ggpubr')
 
 # Function to check and install missing packages
