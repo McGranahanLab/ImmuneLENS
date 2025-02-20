@@ -105,6 +105,9 @@ exonsImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
                                            exons.to.use)
   vdj.region.df.filt.exons.median <- median.exon.output[[1]]
   exon.remove <- median.exon.output[[2]]
+  
+  if(dim(vdj.region.df.filt.exons.median)[1] == 0) stop('All positions have been removed due to low coverage. Consider decreasing median.thresh')
+  
 
   # Calculate log ratio
   vdj.logR.df <- getLogRdf(vdj.region.df.filt.exons.median, vdj.seg, minCov = 0)

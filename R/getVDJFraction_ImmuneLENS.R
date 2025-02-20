@@ -70,6 +70,16 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
                     'IGLC7','IGLL5',
                     'IGLC1','IGLC2','IGLC3','IGLC4','IGLC5','IGLC6','IGKC')
   
+  if(hg19_or_38 == 'hg19'){
+    exclude.segs <- unique(c(exclude.segs,
+                             'TRBV6_2','TRBV7_2','TRBV7_9','TRBV13','TRBV10_3',
+                             'TRBV11_3','TRBV12_3','TRBV12_4','TRBV12_5','TRBV14',
+                             'TRBV15','TRBV16','TRBV17','TRBV18','TRBD1',
+                             'TRBJ1_1','TRBJ1_2','TRBJ1_3','TRBJ1_4','TRBJ1_5',
+                             'TRBJ1_6','TRBC1'))
+    
+  }
+  
   class.switch.genes <- c('IGHA2','IGHE','IGHG4','IGHG2','IGHA1',
                           'IGHG1','IGHG3','IGHM')
   
@@ -266,6 +276,11 @@ getVDJfraction_ImmuneLENS <- function(test.logR, vdj.gene, sample_name,
   gc()
   
   X <- as.matrix(test.logR2[,-c(1,2)])
+  
+  if(hg19_or_38 == 'hg19' & vdj.gene == 'TCRB'){
+    # Issue with TCRB in hg19 and NAs due to N seq region in hg19 sequence
+    X <- X[!is.na(X[,'exon.gc']),]
+  }
   
   restr.lm <- conLM.lm_custom(y = y, X = X, so = so, weights = weights,p = p,
                           b.unrestr = b.unrestr, Sigma = Sigma,

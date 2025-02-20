@@ -21,9 +21,17 @@ getLogRdf <-  function(region.df, segs, minCov = 0){
     dplyr::filter(pos >= segs[4,]$start) %>%
     dplyr::filter(reads >=  minCov) %>% dplyr::select(!!col.sym) %>% `[[`(1)
   tumour.random.covs <- c(tumour.random.covs1, tumour.random.covs2)
+  
   # Use median of these values for normalisation to get "logR"
   n1 <- median(tumour.random.covs)
 
+  # If median = 0 (low coverage cases - instead use mean)
+  if(n1 == 0){
+    n1 <- mean(tumour.random.covs)
+    if(n1 == 0) stop('All normalisation positions have 0 coverage. Impossible to calculate logR')
+  }
+  
+  
   # Select coverage values across TCRA
   tumour.test.covs1 <- region.df %>%
     dplyr::filter(pos >= segs[1,]$start & pos <= segs[1,]$end) %>%
