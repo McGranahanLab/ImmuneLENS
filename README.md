@@ -1,7 +1,9 @@
 
 # ImmuneLENS
 
-Immune Lymphocyte Estimation from Nucleotide Sequencing (Immune LENS) an R package to calculate T and B cell fractions from WGS data from hg19 or hg38 aligned genomes. It also includes functions related to the measure of T cell fractions from WES data for hg19 or hg38 aligned genomes originally used in the R package T cell ExTRECT. For more details on the WES version please read our publication [*Using DNA sequencing data to quantify T cell fraction and therapy response. Bentham et al. Nature (2021)*](https://www.nature.com/articles/s41586-021-03894-5).
+Immune Lymphocyte Estimation from Nucleotide Sequencing (Immune LENS) an R package to calculate T and B cell fractions from WGS data from hg19 or hg38 aligned genomes. Currently B cell fraction calculation is only supported for hg38 aligned genomes. It is an extension to the package T cell ExTRECT that estimated T cell content from  WES data for hg19 or hg38 aligned genomes. 
+
+For more details on this package please read our publication [*ImmuneLENS characterizes systemic immune dysregulation in aging and cancer. Bentham et al. Nature (2025)*](https://www.nature.com/articles/s41588-025-02086-5).
 
 ## Instalation guide
 
