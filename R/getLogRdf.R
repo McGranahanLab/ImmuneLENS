@@ -22,6 +22,10 @@ getLogRdf <-  function(region.df, segs, minCov = 0){
     dplyr::filter(reads >=  minCov) %>% dplyr::select(!!col.sym) %>% `[[`(1)
   tumour.random.covs <- c(tumour.random.covs1, tumour.random.covs2)
   
+  if(length(tumour.random.covs) == 0) stop(paste0('No positions with coverage in the normalisation regions: ',
+                                                  segs$start[3], '-',segs$end[3],' and ',
+                                                  segs$start[4], '-',segs$end[4]))
+  
   # Use median of these values for normalisation to get "logR"
   n1 <- median(tumour.random.covs)
 

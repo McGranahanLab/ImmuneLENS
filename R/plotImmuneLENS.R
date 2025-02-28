@@ -231,11 +231,7 @@ plotImmuneLENS <- function(vdj.region.df, vdj.gene = 'TCRA',
   exons.selected <- TCRA.exons
 
   # Get GC content for exons
-  if(hg19_or_38 == 'hg19' & vdj.gene == 'TCRA'){
-    exon.adjust.loc <- 21999999
-  }else{
     exon.adjust.loc <- vdj.start - 1
-  }
 
   TCRA.exons.loc <- list()
   for(i in seq_len(dim(exons.selected)[1])){
